@@ -1,0 +1,145 @@
+<html lang="en" xmlns="http://www.w3.org/1999/html"><head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4ff;
+        }
+        .container {
+            display: flex;
+            width: 800px;
+            height: 500px;
+            background-color: #d4c4ff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        .chat-section{
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 10px;
+            border-right: 2px solid black;
+        }
+        .file-section {
+            flex: 0.8;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 10px;
+            border-right: none;
+        }
+        .box-chat {
+            display: flex;
+            justify-content: center;
+            align-content: center;
+            border: 2px solid black;
+            background-color: white;
+            padding: 10px;
+            margin-bottom: 5px;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 15px;
+            text-decoration: underline;
+        }
+        .box-vector_store,.box-storage {
+            display: flex;
+            justify-content: center;
+            align-content: center;
+            border: 2px solid black;
+            background-color: white;
+            padding: 10px;
+            margin-bottom: 10px;
+            height: 150px;
+            overflow-y: auto;
+            font-size: 15px;
+            text-decoration: underline;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            align-content: center;
+            margin-bottom: 35px;
+        }
+        button_message {
+            padding: 5px 139px;
+            border: 2px solid;
+            cursor: pointer;
+        }
+        button_upload_remove, button_attach_detach  {
+            padding: 5px 50px;
+            border: 2px solid;
+            cursor: pointer;
+            width: 50px;
+            margin-right: 10px;
+            margin-left: 10px;
+        }
+
+        .attach { border-color: red; background-color: #ffffff; }
+        .detach { border-color: blue; background-color: #ffffff; }
+        .upload { border-color: red; background-color: #ffffff; }
+        .remove { border-color: blue; background-color: #ffffff; }
+        .send { border-color: black; background-color: #ffffff; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="chat-section">
+        <div class="box-chat">Chat</div>
+        <div class="box-chat"></div>
+        <button_message class="send">メッセージを送信</button_message>
+    </div>
+    <div class="file-section">
+        <div class="box-vector_store">vector store</div>
+        <div class="buttons">
+            <button_attach_detach class="attach">attach</button_attach_detach>
+            <button_attach_detach class="detach">detach</button_attach_detach>
+        </div>
+        <div class="box-storage">storage</div>
+        <div class="buttons">
+            <button_upload_remove class="upload">upload</button_upload_remove>
+            <button_upload_remove class="remove">remove</button_upload_remove>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        var ws = new WebSocket('ws://' + window.location.host +
+            '/jb-server-page?reloadMode=RELOAD_ON_SAVE&'+
+            'referrer=' + encodeURIComponent(window.location.pathname));
+        ws.onmessage = function (msg) {
+            if (msg.data === 'reload') {
+                window.location.reload();
+            }
+            if (msg.data.startsWith('update-css ')) {
+                var messageId = msg.data.substring(11);
+                var links = document.getElementsByTagName('link');
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    if (link.rel !== 'stylesheet') continue;
+                    var clonedLink = link.cloneNode(true);
+                    var newHref = link.href.replace(/(&|\?)jbUpdateLinksId=\d+/, "$1jbUpdateLinksId=" + messageId);
+                    if (newHref !== link.href) {
+                        clonedLink.href = newHref;
+                    }
+                    else {
+                        var indexOfQuest = newHref.indexOf('?');
+                        if (indexOfQuest >= 0) {
+                            // to support ?foo#hash
+                            clonedLink.href = newHref.substring(0, indexOfQuest + 1) + 'jbUpdateLinksId=' + messageId + '&' +
+                                newHref.substring(indexOfQuest + 1);
+                        }
+                        else {
+                            clonedLink.href += '?' + 'jbUpdateLinksId=' + messageId;
+                        }
+                    }
+                    link.replaceWith(clonedLink);
+                }
+            }
+        };
+    })();
+</script></body></html>
