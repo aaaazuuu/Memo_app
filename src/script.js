@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelButton = document.getElementById('cancel');
 
     // メモ保存用リスト
-    let notes = [];
+    let notes = JSON.parse(localStorage.getItem('notes')) || [];
 
     // メモ追加ボタンクリック時の処理
     addNoteButton.addEventListener('click', function () {
@@ -34,13 +34,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const noteObj = {tag, note};
         notes.push(noteObj);
+        saveNotes();
         updateNotes();
         updateTagFilter();
         tagInput.value = '';
         notesInput.value = '';
     });
 
-    //　メモ一覧を更新
+    // メモをローカルストレージに保存
+    function saveNotes() {
+        localStorage.setItem('notes', JSON.stringify(notes));
+    }
+
+    // メモ一覧を更新
     function updateNotes() {
         tagsContainer.innerHTML = '';
         notes.forEach((note, index) => {
@@ -71,6 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
             button.addEventListener("click", function () {
                 const index = this.getAttribute('data-index');
                 notes.splice(index, 1);
+                saveNotes();
                 updateNotes();
                 updateTagFilter();
             });
@@ -117,11 +124,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    //　編集内容を保存
+    // 編集内容を保存
     saveButton.addEventListener('click', function () {
         const index = this.getAttribute('data-index');
         notes[index].tag = tagInputRefact.value;
         notes[index].note = notesInputRefact.value;
+        saveNotes();
         editContainer.setAttribute('hidden', 'true');
         updateNotes();
         updateTagFilter();
